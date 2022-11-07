@@ -18,6 +18,7 @@ KI_LAYER_DICT = {
     "F.Mask": "GTS",
     "F.Cu": "GTL",
     "F.Fab": "GTD",
+    "Dwgs.User": "GTD",
 }
 
 FP_LIB_PATH = None
@@ -115,9 +116,8 @@ class KiCadPart(PCBPart):
                 self.pads.append(p)
                 p.pin_pad()
                 dc.pop()
-        
+
         for hole in self.holes:
-            print(hole)
             dc.push()
             dc.goxy(*hole["xy"])
             dc.board.add_hole(dc.xy, hole["drill"])
@@ -128,7 +128,12 @@ class KiCadPart(PCBPart):
                 xyc = self.center.xy
                 xy = (xyc[0] + label["xy"][0], xyc[1] + label["xy"][1])
                 self.board.add_text(
-                    xy, self.id, angle=0, scale=1.0, side=self.side, justify="center",
+                    xy,
+                    self.id,
+                    angle=0,
+                    scale=1.0,
+                    side=self.side,
+                    justify="center",
                 )
 
     def _map_layers(self, layers):
@@ -218,11 +223,16 @@ class KiCadPart(PCBPart):
             for e in items[2:]:
                 if isinstance(e, dict):
                     if "at" in e:
-                        xy = float(e["at"][0]), -float(e["at"][1])
+                        xy = xy[0] + float(e["at"][0]), xy[1] - float(e["at"][1])
                     elif "size" in e:
                         size = float(e["size"][0]), float(e["size"][1])
                     elif "layers" in e:
                         layers = self._map_layers(e["layers"])
+                    elif "drill" in e:
+                        offsetIndex = e["drill"][0].index("offset") + 1
+                        xy = xy[0] + float(e["drill"][0][offsetIndex]), xy[1] - float(
+                            e["drill"][0][offsetIndex + 1]
+                        )
             self.smd_pads.append(
                 {"name": name, "xy": xy, "size": size, "layers": layers}
             )
@@ -257,9 +267,7 @@ class KiCadPart(PCBPart):
                             drill = float(e["drill"][0])
                         except:
                             pass
-            self.holes.append(
-                {"xy": xy, "size":size, "drill": drill}
-            )
+            self.holes.append({"xy": xy, "size": size, "drill": drill})
 
     def parse(self):
         with open(self.libraryfile, "r") as f:
@@ -329,10 +337,9 @@ class SkiPart(KiCadPart):
             ALL_KICAD_MOD_FILES = glob.glob(
                 FP_LIB_PATH + os.sep + "**/*.kicad_mod", recursive=True
             )
-        
+
         libraryPath = libraryfile.replace(":", ".pretty/")
         for f in ALL_KICAD_MOD_FILES:
             if libraryPath in f:
                 return f
         return None
-
