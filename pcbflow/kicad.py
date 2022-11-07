@@ -34,6 +34,7 @@ class KiCadPart(PCBPart):
         self.circles = []
         self.labels = []
         self.docu = []
+        self.holes = []
         if "side" not in self.__dict__:
             self.side = "top"
         if "side" in kwargs:
@@ -114,6 +115,13 @@ class KiCadPart(PCBPart):
                 self.pads.append(p)
                 p.pin_pad()
                 dc.pop()
+        
+        for hole in self.holes:
+            print(hole)
+            dc.push()
+            dc.goxy(*hole["xy"])
+            dc.board.add_hole(dc.xy, hole["drill"])
+            dc.pop()
 
         if len(self.labels) > 0:
             for label in self.labels:
@@ -235,6 +243,22 @@ class KiCadPart(PCBPart):
                             pass
             self.pin_pads.append(
                 {"name": name, "xy": xy, "size": size, "drill": drill, "shape": shape}
+            )
+        elif items[1] == "np_thru_hole":
+            for e in items[3:]:
+                if isinstance(e, dict):
+                    if "at" in e:
+                        xy = float(e["at"][0]), -float(e["at"][1])
+                    elif "size" in e:
+                        size = float(e["size"][0]), float(e["size"][1])
+                    # TODO: support oval shaped drill, i.e. slot
+                    elif "drill" in e:
+                        try:
+                            drill = float(e["drill"][0])
+                        except:
+                            pass
+            self.holes.append(
+                {"xy": xy, "size":size, "drill": drill}
             )
 
     def parse(self):
