@@ -299,20 +299,16 @@ class SkiPart(KiCadPart):
         global ALL_KICAD_MOD_FILES, FP_LIB_PATH
         if ALL_KICAD_MOD_FILES is None:
             for path in footprint_search_paths["kicad"]:
-                kicadfn = path + os.sep + "kicad_common"
-                if os.path.isfile(full_path(kicadfn)):
-                    with open(kicadfn, "r") as f:
-                        kf = f.readlines()
-                    for line in kf:
-                        ls = line.split("=")
-                        if ls[0] == "KISYSMOD":
-                            FP_LIB_PATH = ls[1].rstrip()
+                FP_LIB_PATH = full_path(path)
             if FP_LIB_PATH is None:
                 raise FileNotFoundError("Unable to find KiCAD footprints directory")
             ALL_KICAD_MOD_FILES = glob.glob(
                 FP_LIB_PATH + os.sep + "**/*.kicad_mod", recursive=True
             )
+        
+        libraryPath = libraryfile.replace(":", ".pretty/")
         for f in ALL_KICAD_MOD_FILES:
-            if libraryfile in f:
+            if libraryPath in f:
                 return f
         return None
+
