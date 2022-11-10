@@ -32,8 +32,7 @@ def token_splitter(tokens):
 
 
 class Turtle:
-    """Turtle graphics command parser base class
-    """
+    """Turtle graphics command parser base class"""
 
     def __repr__(self):
         return "<at (%.3f, %.3f) facing %.3f>" % (self.xy + (self.dir,))
@@ -79,8 +78,7 @@ class Turtle:
 
 
 class Draw(Turtle):
-    """Drawing context class
-    """
+    """Drawing context class"""
 
     def __init__(self, board, xy, dir=0, name=None):
         self.board = board
@@ -192,6 +190,19 @@ class Draw(Turtle):
         self.left(90)
         self.forward(y)
         return self
+
+    def align(self, other, axis="x"):
+        (dx, dy) = (other.xy[0] - self.xy[0], other.xy[1] - self.xy[1])
+        a = (self.dir / 360) * (2 * math.pi)
+        if axis == "x":
+            d = dy / math.cos(a)
+        else:
+            d = -(dx / math.cos(a))
+
+        if (dx > 0) == (dy > 0):
+            d = d if axis == "x" else -d
+
+        return self.forward(d)
 
     def is_behind(self, other):
         assert abs(self.dir - other.dir) < 0.0001, abs(self.dir - other.dir)
