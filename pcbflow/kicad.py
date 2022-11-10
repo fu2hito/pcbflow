@@ -143,6 +143,9 @@ class KiCadPart(PCBPart):
                 ml.append(KI_LAYER_DICT[layer])
         return ml
 
+    def _flip_xy(self, xy):
+        return (xy[0] if self.side == "top" else -xy[0], xy[1])
+
     def _parse_fp_text(self, items):
         xy = []
         layers = []
@@ -154,7 +157,7 @@ class KiCadPart(PCBPart):
                 elif "layer" in e:
                     layer = self._map_layers(e["layer"])[0]
         if text == "reference":
-            self.labels.append({"xy": xy, "text": text, "layer": layer})
+            self.labels.append({"xy": self._flip_xy(xy), "text": text, "layer": layer})
 
     def _parse_fp_poly(self, items):
         coords = []
@@ -162,7 +165,7 @@ class KiCadPart(PCBPart):
             if isinstance(e, dict):
                 if "pts" in e:
                     for pt in e["pts"]:
-                        coords.append((float(pt[2]), -float(pt[3])))
+                        coords.append(self._flip_xy((float(pt[2]), -float(pt[3]))))
                 elif "width" in e:
                     width = float(e["width"][0])
                 elif "layer" in e:
@@ -178,10 +181,10 @@ class KiCadPart(PCBPart):
             if isinstance(e, dict):
                 if "center" in e:
                     pt = e["center"]
-                    center = (float(pt[0]), -float(pt[1]))
+                    center = self._flip_xy((float(pt[0]), -float(pt[1])))
                 if "end" in e:
                     pt = e["end"]
-                    end = (float(pt[0]), -float(pt[1]))
+                    end = self._flip_xy((float(pt[0]), -float(pt[1])))
                     diameter = max(abs(center[0] - end[0]), abs(center[1] - end[1]))
                 elif "width" in e:
                     width = float(e["width"][0])
@@ -199,12 +202,12 @@ class KiCadPart(PCBPart):
             if isinstance(e, dict):
                 if "start" in e:
                     coord = e["start"]
-                    x, y = float(coord[0]), float(coord[1])
-                    coords.append((float(coord[0]), -float(coord[1])))
+                    # x, y = self._flip_xy((float(coord[0]), float(coord[1])))
+                    coords.append(self._flip_xy((float(coord[0]), -float(coord[1]))))
                 elif "end" in e:
                     coord = e["end"]
-                    x, y = float(coord[0]), float(coord[1])
-                    coords.append((float(coord[0]), -float(coord[1])))
+                    # x, y = self._flip_xy((float(coord[0]), float(coord[1])))
+                    coords.append(self._flip_xy((float(coord[0]), -float(coord[1]))))
                 elif "width" in e:
                     width = float(e["width"][0])
                 elif "layer" in e:
@@ -234,7 +237,12 @@ class KiCadPart(PCBPart):
                             e["drill"][0][offsetIndex + 1]
                         )
             self.smd_pads.append(
-                {"name": name, "xy": xy, "size": size, "layers": layers}
+                {
+                    "name": name,
+                    "xy": self._flip_xy(xy),
+                    "size": size,
+                    "layers": layers,
+                }
             )
 
         elif items[1] == "thru_hole":
@@ -252,7 +260,13 @@ class KiCadPart(PCBPart):
                         except:
                             pass
             self.pin_pads.append(
-                {"name": name, "xy": xy, "size": size, "drill": drill, "shape": shape}
+                {
+                    "name": name,
+                    "xy": self._flip_xy(xy),
+                    "size": size,
+                    "drill": drill,
+                    "shape": shape,
+                }
             )
         elif items[1] == "np_thru_hole":
             for e in items[3:]:
@@ -267,7 +281,7 @@ class KiCadPart(PCBPart):
                             drill = float(e["drill"][0])
                         except:
                             pass
-            self.holes.append({"xy": xy, "size": size, "drill": drill})
+            self.holes.append({"xy": self._flip_xy(xy), "size": size, "drill": drill})
 
     def parse(self):
         with open(self.libraryfile, "r") as f:
