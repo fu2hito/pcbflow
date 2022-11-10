@@ -130,7 +130,7 @@ class KiCadPart(PCBPart):
                 self.board.add_text(
                     xy,
                     self.id,
-                    angle=0,
+                    angle=label["rotate"],
                     scale=1.0,
                     side=self.side,
                     justify="center",
@@ -148,16 +148,25 @@ class KiCadPart(PCBPart):
 
     def _parse_fp_text(self, items):
         xy = []
+        rotate = 0
         layers = []
         text = items[0]
         for e in items:
             if isinstance(e, dict):
                 if "at" in e:
                     xy = float(e["at"][0]), -float(e["at"][1])
+                    rotate = e["at"][2] if len(e["at"]) >= 3 else 0
                 elif "layer" in e:
                     layer = self._map_layers(e["layer"])[0]
         if text == "reference":
-            self.labels.append({"xy": self._flip_xy(xy), "text": text, "layer": layer})
+            self.labels.append(
+                {
+                    "xy": self._flip_xy(xy),
+                    "rotate": float(rotate),
+                    "text": text,
+                    "layer": layer,
+                }
+            )
 
     def _parse_fp_poly(self, items):
         coords = []
