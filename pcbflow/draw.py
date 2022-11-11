@@ -204,6 +204,9 @@ class Draw(Turtle):
 
         return self.forward(d)
 
+    def align_meet(self, other, axis="x"):
+        return self.align(other, axis).meet(other)
+
     def is_behind(self, other):
         assert abs(self.dir - other.dir) < 0.0001, abs(self.dir - other.dir)
         (_, y) = self.seek(other)
