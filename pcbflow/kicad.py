@@ -14,6 +14,7 @@ from pcbflow import *
 
 KI_LAYER_DICT = {
     "F.SilkS": "GTO",
+    "B.SilkS": "GBO",
     "F.Paste": "GTP",
     "F.Mask": "GTS",
     "F.Cu": "GTL",
@@ -132,7 +133,11 @@ class KiCadPart(PCBPart):
                     self.id,
                     angle=label["rotate"],
                     scale=1.0,
-                    side=self.side,
+                    side=self.side
+                    if label["layer"] == "GTO"
+                    else "bottom"
+                    if self.side == "top"
+                    else "top",
                     justify="center",
                 )
 
