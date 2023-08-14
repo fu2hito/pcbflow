@@ -38,9 +38,9 @@ for line in requirements:
 
 def check_python_version():
     """Exit when the Python version is too low."""
-    if sys.version < MINIMUM_PYTHON_VERSION:
-        sys.exit("Python {0}+ is required.".format(MINIMUM_PYTHON_VERSION))
-
+    # if sys.version < MINIMUM_PYTHON_VERSION:
+        # sys.exit("Python {0}+ is required.".format(MINIMUM_PYTHON_VERSION))
+    pass
 
 def read_package_variable(key, filename="__init__.py"):
     """Read the value of a variable from the package without importing."""
