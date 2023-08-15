@@ -1,0 +1,29 @@
+[project]
+name = "pcbflow"
+version = "0.1.0"
+description = "A python library for PCB layout."
+authors = [
+    { name = "Michael Gale", email = "michael@fxbricks.com" }
+]
+dependencies = [
+    "cairosvg",
+    "pillow",
+    "shapely<2",
+    "svgwrite",
+]
+readme = "README.md"
+requires-python = ">= 3.8"
+license = { text = "MIT" }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.rye]
+managed = true
+dev-dependencies = [
+    "pytest>=7.4.0",
+]
+
+[tool.hatch.metadata]
+allow-direct-references = true
